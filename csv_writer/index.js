@@ -1,5 +1,14 @@
-import { appendFileSync } from 'fs';
+import {createObjectCsvWriter} from 'csv-writer';
 import prompt from 'prompt';
+
+const csvWriter = createObjectCsvWriter({
+    path: './contacts.csv',
+    header: [
+        { id: 'name', title: 'NAME' },
+        { id: 'number', title: 'NUMBER' },
+        { id: 'email', title: 'EMAIl' },
+    ],
+});
 
 prompt.message = '';
 prompt.start();
@@ -11,10 +20,10 @@ class Person {
         this.email = email;
     }
 
-    saveToCSV() {
-        const content = `${this.name},${this.number},${this.email}\n`;
+    async saveToCSV() {
         try {
-            appendFileSync('./contacts.csv', content);
+            const { name, number, email } = this;
+            await csvWriter.writeRecords([{ name, number, email }]);
             console.log(`${this.name} Saved!`);
         } catch (err) {
             console.log(err);
@@ -35,9 +44,9 @@ const startApp = async () => {
         },
     ]);
 
-    new Person(name, number, email).saveToCSV();
+    await new Person(name, number, email).saveToCSV();
 
-    const {again} = prompt.get([{
+    const {again} = await prompt.get([{
         name: 'again',
         description: 'Continue? [y to continue]',
     },]);
